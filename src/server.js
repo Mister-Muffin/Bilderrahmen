@@ -5,7 +5,7 @@ import path from 'path'
 const app = express()
 const port = 3000
 
-const dir = "src/public/images"
+const dir = "/mnt/bildi"
 
 function readAllFiles(dir, arr) {
     const files = fs.readdirSync(dir, { withFileTypes: true })
@@ -22,6 +22,7 @@ function readAllFiles(dir, arr) {
 }
 
 app.use(express.static('src/public'))
+app.use(express.static(dir))
 
 app.get("/api/images", (req, res) => {
     const files = readAllFiles(dir, []).map((name) => name.substring(11))
