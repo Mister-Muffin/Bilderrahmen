@@ -1,0 +1,5 @@
+.direnv/
+src/public/images/
+
+.directory
+node_modules/

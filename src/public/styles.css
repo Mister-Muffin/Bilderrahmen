@@ -1,0 +1,76 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: #141414;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.container {
+  position: absolute;
+  width: 1920px;
+  height: 1080px;
+  text-align: center;
+  z-index: 0;
+}
+
+#c1 {
+  margin-left: 0%;
+}
+
+#loadingText {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  color: white;
+  z-index: 1;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.newImage {
+  margin-left: -100%;
+}
+
+.animation {
+  animation-duration: 2s;
+}
+
+.slideout {
+  animation-name: slideout;
+  animation-direction: alternate;
+  animation-fill-mode: forwards;
+}
+
+.slidein {
+  animation-name: slidein;
+  animation-direction: alternate;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideout {
+  from {
+    margin-left: 0%;
+  }
+
+  to {
+    margin-left: 100%;
+  }
+}
+
+@keyframes slidein {
+  from {
+    margin-left: -100%;
+  }
+
+  to {
+    margin-left: 0%;
+  }
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
