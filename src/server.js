@@ -1,10 +1,17 @@
 import express from 'express'
 import fs from 'fs'
 import path from 'path'
+import { hostname } from 'os'
 
 const app = express()
 const port = 3000
 
+const devHostname = "julian-nixos"
+const devMode = hostname() == devHostname
+const dir = devMode ? "src/public/images" : "/mnt/bildi/images"
+const configDir = devMode ? "src/config" : "/mnt/bildi/config"
+
+console.log(devMode ? "Running in dev mode!" : "Running in production mode.")
 
 function readAllFiles(dir, arr) {
     const files = fs.readdirSync(dir, { withFileTypes: true })
@@ -27,9 +34,9 @@ app.use(express.static(dir))
 
 app.get("/api/images", (req, res) => {
     const files = readAllFiles(dir, []).map((name) => name.substring(11))
-    for (const file of files) {
-        // console.log(file)
-    }
+    // for (const file of files) {
+    //     console.log(file)
+    // }
     res.send(files)
 
 })

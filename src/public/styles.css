@@ -25,6 +25,14 @@ body {
   z-index: 1;
 }
 
+#imageIndex {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  color: gray;
+  z-index: 1;
+}
+
 .hidden {
   visibility: hidden;
 }

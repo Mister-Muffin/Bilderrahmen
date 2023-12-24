@@ -6,6 +6,7 @@ let images = [];
 let imageIndex = 0
 
 let loadingText = document.getElementById("loadingText")
+let imageIndexElement = document.getElementById("imageIndex")
 
 const sleepDuration = 8 * 1000
 
@@ -27,6 +28,7 @@ function loadFirstImage() {
             });
 
             i1.src = images[imageIndex];
+            imageIndexElement.innerText = imageIndex
 
             setTimeout(() => {
                 loadNextImage(activeDiv);
@@ -45,7 +47,7 @@ async function loop(nextImageDiv) {
     nextImageDiv.classList.add("slidein");
     activeDiv = nextImageDiv;
 
-    // console.log(activeDiv);
+    imageIndexElement.innerText = imageIndex
 
     setTimeout(function () {
         loadNextImage(oldImage);
