@@ -34,7 +34,7 @@ app.use(express.static('src/public'))
 app.use(express.static(dir))
 
 app.get("/api/images", (req, res) => {
-    const files = readAllFiles(dir, []).map((name) => name.substring(18))
+    const files = readAllFiles(dir, []).map((name) => name.substring(17))
     // for (const file of files) {
     //     console.log(file)
     // }
