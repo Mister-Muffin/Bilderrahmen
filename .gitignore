@@ -1,5 +1,6 @@
 .direnv/
 src/public/images/
+src/config
 
 .directory
 node_modules/

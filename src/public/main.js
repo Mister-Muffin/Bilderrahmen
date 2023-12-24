@@ -7,25 +7,33 @@ let imageIndex = 0
 
 let loadingText = document.getElementById("loadingText")
 
-fetch("/api/images")
-    .then((res) => {
-        return res.json();
-    })
+const sleepDuration = 8 * 1000
+
+fetch("/api/lastImageIndex")
+    .then((res) => { return res.json(); })
     .then((data) => {
-        data.forEach((element) => {
-            images.push(element);
-        });
-
-        i1.src = images[imageIndex];
-
-        setTimeout(() => {
-            loadNextImage(activeDiv);
-        }, 1000);
+        imageIndex = data.lastImageIndex
     })
-    .catch((e) => {
-        console.warn(e);
-    });
+    .then(() => { loadFirstImage() })
+    .catch((e) => { console.warn(e); });
 
+
+function loadFirstImage() {
+    fetch("/api/images")
+        .then((res) => { return res.json(); })
+        .then((data) => {
+            data.forEach((element) => {
+                images.push(element);
+            });
+
+            i1.src = images[imageIndex];
+
+            setTimeout(() => {
+                loadNextImage(activeDiv);
+            }, sleepDuration);
+        })
+        .catch((e) => { console.warn(e); });
+}
 
 async function loop(nextImageDiv) {
     // incrementImageIndex()
@@ -41,11 +49,19 @@ async function loop(nextImageDiv) {
 
     setTimeout(function () {
         loadNextImage(oldImage);
-    }, 20000);
+    }, sleepDuration);
 }
 
 function incrementImageIndex() {
     imageIndex = (imageIndex + 1) % images.length
+    fetch("/api/lastImageIndex", {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ lastImageIndex: imageIndex })
+    })
+        .catch((e) => { console.warn(e); });
 }
 
 async function loadNextImage(oldImage) {
@@ -70,5 +86,5 @@ async function loadNextImage(oldImage) {
 
     setTimeout(function () {
         loop(nextImageDiv);
-    }, 5000);
+    }, 1000);
 }
