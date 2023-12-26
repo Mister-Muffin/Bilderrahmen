@@ -16,7 +16,7 @@ const port = 3000
 
 const devHostname = "julian-nixos"
 const devMode = hostname() == devHostname
-const dir = devMode ? "src/public/images" : "/mnt/bildi/images"
+const dir = devMode ? "src/public/images" : "/mnt/bildi"
 
 console.log(devMode ? "Running in dev mode!" : "Running in production mode.")
 
@@ -41,7 +41,7 @@ app.use(express.static('src/public'))
 app.use(express.static(dir))
 
 app.get("/api/images", (req, res) => {
-    const files = readAllFiles(dir, []).map((name) => name.substring(17))
+    const files = readAllFiles(dir, []).map((name) => name.substring(11))
 
     res.send(files)
 })
