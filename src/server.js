@@ -2,6 +2,14 @@ import express from 'express'
 import fs from 'fs'
 import path from 'path'
 import { hostname } from 'os'
+import { createClient } from 'redis'
+
+const client = createClient({
+    url: 'redis://10.7.7.61:6370'
+})
+client.on('error', err => console.warn('Redis Client Error', err))
+
+await client.connect();
 
 const app = express()
 const port = 3000
@@ -9,13 +17,12 @@ const port = 3000
 const devHostname = "julian-nixos"
 const devMode = hostname() == devHostname
 const dir = devMode ? "src/public/images" : "/mnt/bildi/images"
-const configDir = devMode ? "src/config" : "/mnt/bildi/config"
 
 console.log(devMode ? "Running in dev mode!" : "Running in production mode.")
 
 function readAllFiles(dir, arr) {
     const files = fs.readdirSync(dir, { withFileTypes: true })
-    
+
     for (const file of files) {
         if (file.isDirectory()) {
             readAllFiles(path.join(dir, file.name), arr);
@@ -35,24 +42,20 @@ app.use(express.static(dir))
 
 app.get("/api/images", (req, res) => {
     const files = readAllFiles(dir, []).map((name) => name.substring(17))
-    // for (const file of files) {
-    //     console.log(file)
-    // }
+
     res.send(files)
-
 })
 
-app.get("/api/lastImageIndex", (req, res) => {
-    const file = fs.readFileSync(configDir + "/config.json")
-    
-    res.send(file)
+app.get("/api/lastImageIndex", async (req, res) => {
+    const value = await client.get("lastImageIndex")
+    console.log(Number(value))
+
+    res.send({ lastImageIndex: Number(value) })
 })
 
-app.patch("/api/lastImageIndex", (req, res) => {
-    const file = JSON.parse(fs.readFileSync(configDir + "/config.json", "utf8"))
-    file.lastImageIndex = req.body.lastImageIndex
-    fs.writeFileSync(configDir + "/config.json", JSON.stringify(file))
-    
+app.patch("/api/lastImageIndex", async (req, res) => {
+    await client.set("lastImageIndex", req.body.lastImageIndex)
+
     res.sendStatus(200)
 })
 
