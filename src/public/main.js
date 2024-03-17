@@ -68,7 +68,7 @@ async function loop(nextImageDiv) {
     activeDiv = nextImageDiv;
 
     const splitName = images[imageIndex].split('/')
-    const splitYear = splitName[2]
+    const splitYear = splitName[1]
     imageYearElement.innerText = splitYear
     imageIndexElement.innerText = imageIndex
 
