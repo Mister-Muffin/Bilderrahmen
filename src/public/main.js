@@ -8,7 +8,7 @@ let imageIndex = 0
 let loadingText = document.getElementById("loadingText")
 let imageIndexElement = document.getElementById("imageIndex")
 
-const sleepDuration = 8 * 1000
+const sleepDuration = 20 * 1000
 
 fetch("/api/lastImageIndex")
     .then((res) => { return res.json(); })
@@ -51,7 +51,7 @@ async function loop(nextImageDiv) {
 
     setTimeout(function () {
         loadNextImage(oldImage);
-    }, sleepDuration);
+    }, sleepDuration / 2);
 }
 
 function incrementImageIndex() {
@@ -67,6 +67,7 @@ function incrementImageIndex() {
 }
 
 async function loadNextImage(oldImage) {
+    console.log("Loading next image")
     loadingText.classList.toggle("hidden")
     oldImage.remove()
     incrementImageIndex()
@@ -88,5 +89,5 @@ async function loadNextImage(oldImage) {
 
     setTimeout(function () {
         loop(nextImageDiv);
-    }, 1000);
+    }, sleepDuration / 2);
 }
