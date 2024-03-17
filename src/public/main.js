@@ -22,8 +22,15 @@ fetch("/api/lastImageIndex")
 
 function updateClock() {
     let date = new Date();
-    let hh = date.getHours();
-    let mm = date.getMinutes();
+    let hh = date.getHours().toString();
+    let mm = date.getMinutes().toString();
+
+    // if (hh.length < 2) {
+    //     hh = "0" + hh;
+    // }
+    if (mm.length < 2) {
+        mm = "0" + mm;
+    }
 
     let time = hh + ":" + mm;
 
@@ -61,7 +68,7 @@ async function loop(nextImageDiv) {
     activeDiv = nextImageDiv;
 
     const splitName = images[imageIndex].split('/')
-    const splitYear = splitName[splitName.length - 2]
+    const splitYear = splitName[2]
     imageYearElement.innerText = splitYear
     imageIndexElement.innerText = imageIndex
 
