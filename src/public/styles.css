@@ -2,7 +2,7 @@ body {
   margin: 0;
   overflow: hidden;
   background-color: #141414;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Noto Sans";
 }
 
 .container {
@@ -25,13 +25,32 @@ body {
   z-index: 1;
 }
 
+#clock {
+  position: fixed;
+  bottom: 2%;
+  right: 2%;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 1;
+  font-size: 5.5em;
+  font-weight: 500;
+}
+#folder {
+  position: fixed;
+  bottom: 4%;
+  left: 2%;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 1;
+  font-size: 2em;
+  font-weight: 400;
+}
+
 #imageIndex {
   position: fixed;
-  bottom: 0;
-  right: 0;
-  color: rgba(255, 255, 255, 0.85);
+  bottom: 5px;
+  left: 5px;
+  color: rgba(255, 255, 255, 0.8);
   z-index: 1;
-  font-size: 1.2em;
+  font-size: 1em;
 }
 
 .hidden {
@@ -39,7 +58,7 @@ body {
 }
 
 .newImage {
-  margin-left: -100%;
+  opacity: 0;
 }
 
 .animation {
@@ -60,21 +79,21 @@ body {
 
 @keyframes slideout {
   from {
-    margin-left: 0%;
+    opacity: 1;
   }
 
   to {
-    margin-left: 100%;
+    opacity: 0;
   }
 }
 
 @keyframes slidein {
   from {
-    margin-left: -100%;
+    opacity: 0;
   }
 
   to {
-    margin-left: 0%;
+    opacity: 1;
   }
 }
 

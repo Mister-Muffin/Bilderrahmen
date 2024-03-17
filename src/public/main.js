@@ -7,6 +7,7 @@ let imageIndex = 0
 
 let loadingText = document.getElementById("loadingText")
 let imageIndexElement = document.getElementById("imageIndex")
+let imageYearElement = document.getElementById("folder")
 
 const sleepDuration = 20 * 1000
 
@@ -18,6 +19,18 @@ fetch("/api/lastImageIndex")
     .then(() => { loadFirstImage() })
     .catch((e) => { console.warn(e); });
 
+
+function updateClock() {
+    let date = new Date();
+    let hh = date.getHours();
+    let mm = date.getMinutes();
+
+    let time = hh + ":" + mm;
+
+    document.getElementById("clock").innerText = time;
+    setTimeout(function () { updateClock() }, 1000);
+}
+updateClock();
 
 function loadFirstImage() {
     fetch("/api/images")
@@ -47,7 +60,11 @@ async function loop(nextImageDiv) {
     nextImageDiv.classList.add("slidein");
     activeDiv = nextImageDiv;
 
+    const splitName = images[imageIndex].split('/')
+    const splitYear = splitName[splitName.length - 2]
+    imageYearElement.innerText = splitYear
     imageIndexElement.innerText = imageIndex
+
 
     setTimeout(function () {
         loadNextImage(oldImage);
@@ -67,7 +84,7 @@ function incrementImageIndex() {
 }
 
 async function loadNextImage(oldImage) {
-    console.log("Loading next image")
+    console.info("Loading next image")
     loadingText.classList.toggle("hidden")
     oldImage.remove()
     incrementImageIndex()
