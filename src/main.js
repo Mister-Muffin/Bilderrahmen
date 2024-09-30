@@ -11,10 +11,13 @@ let imageYearElement = document.getElementById("folder")
 
 const sleepDuration = 20 * 1000
 
-fetch("/api/lastImageIndex")
+const server = "http://127.0.0.1:3000"
+
+fetch(server + "/api/lastImageIndex")
     .then((res) => { return res.json(); })
     .then((data) => {
         imageIndex = data.lastImageIndex
+        console.log("Last image index: " + imageIndex)
     })
     .then(() => { loadFirstImage() })
     .catch((e) => { console.warn(e); });
@@ -40,11 +43,11 @@ function updateClock() {
 updateClock();
 
 function loadFirstImage() {
-    fetch("/api/images")
+    fetch(server + "/api/images")
         .then((res) => { return res.json(); })
         .then((data) => {
             data.forEach((element) => {
-                images.push(element);
+                images.push(server + '/' + element);
             });
 
             i1.src = images[imageIndex];
@@ -80,7 +83,7 @@ async function loop(nextImageDiv) {
 
 function incrementImageIndex() {
     imageIndex = (imageIndex + 1) % images.length
-    fetch("/api/lastImageIndex", {
+    fetch(server + "/api/lastImageIndex", {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",

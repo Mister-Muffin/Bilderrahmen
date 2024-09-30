@@ -12,16 +12,18 @@
   "tauri": {
     "allowlist": {
       "all": false,
-      "shell": {
+      "http": {
         "all": false,
-        "open": true
+        "request": true
       }
     },
     "windows": [
       {
         "title": "bilderrahmen",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "fullscreen": true,
+        "decorations": false
       }
     ],
     "security": {

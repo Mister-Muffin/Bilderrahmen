@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors';
 import fs from 'fs'
 import path from 'path'
 import { hostname } from 'os'
@@ -16,7 +17,7 @@ const port = 3000
 
 const devHostname = "julian-nixos"
 const devMode = hostname() == devHostname
-const dir = devMode ? "src/public/images" : "/mnt/bildi"
+const dir = devMode ? "src/images" : "/mnt/bildi"
 
 console.log(devMode ? "Running in dev mode!" : "Running in production mode.")
 
@@ -36,8 +37,9 @@ function readAllFiles(dir, arr) {
 
 
 app.use(express.json())
+app.use(cors())
 
-app.use(express.static('src/public'))
+// app.use(express.static('src'))
 app.use(express.static(dir))
 
 app.get("/api/images", (req, res) => {

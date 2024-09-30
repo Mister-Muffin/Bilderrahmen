@@ -4,7 +4,13 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "redis": "^4.6.12"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1"
