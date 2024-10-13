@@ -1,13 +1,5 @@
 import express from 'express'
 import path from 'node:path'
-import { createClient } from 'redis'
-
-const client = createClient({
-    url: 'redis://10.7.7.61:6370'
-})
-client.on('error', err => console.warn('Redis Client Error', err))
-
-await client.connect();
 
 const app = express()
 const port = 3000
@@ -15,6 +7,9 @@ const port = 3000
 const devHostname = "julian-nixos"
 const devMode = Deno.hostname() == devHostname
 const dir = devMode ? "src/public/images" : "/mnt/bildi"
+
+const configDir = "config"
+const lastImageIndexPath = configDir + "/lastImageIndex.txt"
 
 console.log(devMode ? "Running in dev mode!" : "Running in production mode.")
 
@@ -45,14 +40,37 @@ app.get("/api/images", (req, res) => {
 })
 
 app.get("/api/lastImageIndex", async (req, res) => {
-    const value = await client.get("lastImageIndex")
+    try {
+        Deno.mkdirSync(configDir, { recursive: true });
+    } catch (_) { }
+    const file = await Deno.open(lastImageIndexPath, { create: true, read: true, write: true });
+
+    const decoder = new TextDecoder("utf-8");
+    const fileContent = await Deno.readAll(file);
+
+    let value = decoder.decode(fileContent)
+    if (value == "") {
+        value = 0
+        const encoder = new TextEncoder();
+        const data = encoder.encode("0");
+        Deno.writeAll(file, data);
+    }
+
+    file.close();
+
     console.log(Number(value))
 
     res.send({ lastImageIndex: Number(value) })
 })
 
 app.patch("/api/lastImageIndex", async (req, res) => {
-    await client.set("lastImageIndex", req.body.lastImageIndex)
+    try {
+        Deno.mkdirSync(configDir, { recursive: true });
+    } catch (_) { }
+    const file = await Deno.open(lastImageIndexPath, { create: true, read: true, write: true });
+    const encoder = new TextEncoder();
+    const data = encoder.encode(req.body.lastImageIndex);
+    await Deno.writeAll(file, data);
 
     res.sendStatus(200)
 })

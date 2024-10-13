@@ -2,5 +2,7 @@
 src/public/images/
 src/config
 
+config/
+
 .directory
 node_modules/
