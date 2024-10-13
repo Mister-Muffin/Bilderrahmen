@@ -33,13 +33,13 @@ app.use(express.json())
 app.use(express.static('src/public'))
 app.use(express.static(dir))
 
-app.get("/api/images", (req, res) => {
+app.get("/api/images", (_req, res) => {
     const files = readAllFiles(dir, []).map((name) => name.substring(11))
 
     res.send(files)
 })
 
-app.get("/api/lastImageIndex", async (req, res) => {
+app.get("/api/lastImageIndex", async (_req, res) => {
     try {
         Deno.mkdirSync(configDir, { recursive: true });
     } catch (_) { }
@@ -75,7 +75,7 @@ app.patch("/api/lastImageIndex", async (req, res) => {
     res.sendStatus(200)
 })
 
-app.get("/favicon.ico", (req, res) => {
+app.get("/favicon.ico", (_req, res) => {
     res.status(204)
 })
 
