@@ -13,8 +13,7 @@
         shellHook = "echo hello";
 
         packages = with pkgs; [
-          nodejs_18
-          nodePackages.pnpm
+          deno
         ];
       };
     };

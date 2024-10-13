@@ -1,7 +1,5 @@
 import express from 'express'
-import fs from 'fs'
-import path from 'path'
-import { hostname } from 'os'
+import path from 'node:path'
 import { createClient } from 'redis'
 
 const client = createClient({
@@ -15,16 +13,16 @@ const app = express()
 const port = 3000
 
 const devHostname = "julian-nixos"
-const devMode = hostname() == devHostname
+const devMode = Deno.hostname() == devHostname
 const dir = devMode ? "src/public/images" : "/mnt/bildi"
 
 console.log(devMode ? "Running in dev mode!" : "Running in production mode.")
 
 function readAllFiles(dir, arr) {
-    const files = fs.readdirSync(dir, { withFileTypes: true })
+    const files = Deno.readDirSync(dir, { withFileTypes: true })
 
     for (const file of files) {
-        if (file.isDirectory()) {
+        if (file.isDirectory) {
             readAllFiles(path.join(dir, file.name), arr);
         } else {
             if (file.name.endsWith(".directory")) continue
