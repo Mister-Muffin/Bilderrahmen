@@ -1,5 +1,6 @@
 import express from 'express'
 import path from 'node:path'
+import { readAll, writeAll } from 'jsr:@std/io';
 
 const app = express()
 const port = 3000
@@ -46,14 +47,14 @@ app.get("/api/lastImageIndex", async (_req, res) => {
     const file = await Deno.open(lastImageIndexPath, { create: true, read: true, write: true });
 
     const decoder = new TextDecoder("utf-8");
-    const fileContent = await Deno.readAll(file);
+    const fileContent = await readAll(file);
 
     let value = decoder.decode(fileContent)
     if (value == "") {
         value = 0
         const encoder = new TextEncoder();
         const data = encoder.encode("0");
-        Deno.writeAll(file, data);
+        writeAll(file, data);
     }
 
     file.close();
@@ -70,7 +71,7 @@ app.patch("/api/lastImageIndex", async (req, res) => {
     const file = await Deno.open(lastImageIndexPath, { create: true, read: true, write: true });
     const encoder = new TextEncoder();
     const data = encoder.encode(req.body.lastImageIndex);
-    await Deno.writeAll(file, data);
+    await writeAll(file, data);
 
     res.sendStatus(200)
 })
