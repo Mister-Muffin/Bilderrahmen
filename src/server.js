@@ -81,6 +81,6 @@ app.get("/favicon.ico", (_req, res) => {
 })
 
 
-app.listen(port, () => {
+app.listen(port, '::1', () => {
     console.log(`Express listening on port ${port}`)
 })
