@@ -1,0 +1,12 @@
+{
+    "dependencies": {
+      "express": "express@^4.18.2"
+    },
+    "tasks": {
+        "start": "deno run --allow-read --allow-write=config/ --allow-net='[::1]:3000' --allow-env --allow-sys='hostname' src/server.js",
+        "lint": "deno lint"
+      },
+    "imports": {
+        "@std/io": "jsr:@std/io@^0.225.2"
+    }
+  }
