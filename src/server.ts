@@ -1,9 +1,15 @@
 import express from "express"
+import { WebSocket, WebSocketServer } from "ws"
+import http from "node:http"
 import { readAll, writeAll } from "jsr:@std/io"
 
 import { generateImageArray } from "./util.ts"
+import { MessageType } from "./types.ts"
+import { broadcastData, terminateDeadConnections } from "./websocket.ts"
 
 export const app = express()
+const server = http.createServer(app)
+const wss = new WebSocketServer({ server })
 const port = 3000
 
 const devHostnames = ["julian-nixos", "codespaces-a22ac8"]
@@ -20,6 +26,41 @@ const images = generateImageArray(dir)
 images.sort()
 
 let currentImageIndex = 0
+
+export interface ExtWebSocket extends WebSocket {
+    isAlive: boolean
+    isAdmin: boolean
+}
+
+wss.on("connection", async (socket: ExtWebSocket, req) => {
+    socket.isAlive = true
+    console.log(req.url)
+    socket.isAdmin = req.url.endsWith("admin")
+    socket.on("pong", () => {
+        socket.isAlive = true
+    })
+
+    if (socket.isAdmin) {
+        console.log("Admin connected")
+        socket.send(
+            JSON.stringify({
+                type: MessageType.IndexUpdate,
+                ...{ image: images[currentImageIndex], index: currentImageIndex },
+            })
+        )
+        socket.send(JSON.stringify({ type: MessageType.Log, message: "Connected" }))
+    } else {
+        console.log("Client connected")
+        socket.send(
+            JSON.stringify({
+                type: MessageType.IndexUpdate,
+                ...{ image: images[currentImageIndex], index: currentImageIndex },
+            })
+        )
+    }
+})
+//https://medium.com/factory-mind/websocket-node-js-express-step-by-step-using-typescript-725114ad5fe4
+setInterval(terminateDeadConnections, 10000, wss)
 
 app.use(express.json())
 
@@ -92,6 +133,12 @@ app.patch("/api/lastImageIndex", async (req, res) => {
     await writeAll(file, data)
 
     file.close()
+
+    broadcastData(wss, MessageType.IndexUpdate, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+
     res.send({ lastImageIndex: currentImageIndex })
 })
 
@@ -99,6 +146,6 @@ app.get("/favicon.ico", (_req, res) => {
     res.status(204)
 })
 
-app.listen(port, "::1", () => {
+server.listen(port, "::1", () => {
     console.log(`Express listening on port ${port}`)
 })
