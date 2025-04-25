@@ -48,7 +48,7 @@ function loadFirstImage() {
             });
 
             i1.src = images[imageIndex];
-            imageIndexElement.innerText = imageIndex
+            imageIndexElement.innerText = imageIndex + '/' + images.length
 
             setTimeout(() => {
                 loadNextImage(activeDiv);
