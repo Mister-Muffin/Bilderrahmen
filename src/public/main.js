@@ -5,7 +5,58 @@ let loadingText = document.getElementById("loadingText")
 let imageIndexElement = document.getElementById("imageIndex")
 let imageYearElement = document.getElementById("folder")
 
-const sleepDuration = 20 * 1000
+const connectionErrorElement = document.getElementById("connectionError")
+
+setImagesCountUi()
+updateClock()
+
+let nextImageDiv = null
+let oldImage = null
+
+const proto = window.location.protocol == "http:" ? "ws://" : "wss://"
+let connection = null
+
+connectToServer()
+
+// Check the connection on an interval
+setInterval(() => {
+    if (connection.readyState != WebSocket.OPEN) {
+        connectionErrorElement.classList.remove("hidden")
+        console.log("Connection closed, trying to reconnect...")
+        connectToServer()
+    }
+}, 10000)
+
+function connectToServer() {
+    // Discard the old connection if it exists
+    if (connection != null) {
+        connection.close()
+    }
+
+    connection = new WebSocket(`${proto}${window.location.host}`)
+    connection.addEventListener("message", (event) => {
+        console.log("Message from server ", event.data)
+        const data = JSON.parse(event.data)
+        switch (data.type) {
+            case "indexUpdate":
+                switchToNextImage(data.index)
+                break
+            case "prepNext":
+                loadNextImage(data.image)
+                break
+            case "loadImage":
+                setImage(data.index, data.image)
+                break
+            default:
+                console.warn("Unknown message type:", message.type)
+                break
+        }
+    })
+    connection.addEventListener("open", () => {
+        console.log("Connected to server")
+        connectionErrorElement.classList.add("hidden")
+    })
+}
 
 function updateClock() {
     let date = new Date()
@@ -27,34 +78,12 @@ function updateClock() {
     }, 1000)
 }
 
-async function loadFirstImage() {
+function setImage(index, path) {
     try {
-        const res = await fetch("/api/image");
-        const data = await res.json();
-
-        const imagePath = data.image;
-        const index = data.index;
-
-        i1.src = imagePath;
-        setCurrentImageNumberUi(index);
-
-        setTimeout(() => {
-            loadNextImage(activeDiv);
-        }, sleepDuration);
+        i1.src = path
+        setCurrentImageNumberUi(index)
     } catch (e) {
-        console.warn(e);
-    }
-}
-
-// Returns the image path from the server
-async function getImage() {
-    try {
-        const res = await fetch("/api/image");
-        const data = await res.json();
-        return data.image;
-    } catch (e) {
-        console.warn(e);
-        throw e;
+        console.warn(e)
     }
 }
 
@@ -66,21 +95,25 @@ function setCurrentImageNumberUi(index) {
 async function setImagesCountUi() {
     const imagesCountElement = document.getElementById("imagesCount")
     try {
-        const res = await fetch("/api/imagesCount");
-        const data = await res.json();
-        imagesCountElement.innerText = data.count;
+        const res = await fetch("/api/imagesCount")
+        const data = await res.json()
+        imagesCountElement.innerText = data.count
     } catch (e) {
-        console.warn(e);
-        throw e;
+        console.warn(e)
+        throw e
     }
 }
 
-function loop(nextImageDiv, newIndex) {
-    const oldImage = activeDiv
-    
+function switchToNextImage(newIndex) {
+    if (nextImageDiv == null) {
+        console.warn("No next image loaded")
+        return
+    }
+    oldImage = activeDiv
+
     activeDiv.classList.remove("slidein")
     activeDiv.classList.add("slideout")
-    
+
     nextImageDiv.classList.add("slidein")
     activeDiv = nextImageDiv
 
@@ -89,46 +122,23 @@ function loop(nextImageDiv, newIndex) {
     imageYearElement.innerText = splitYear
 
     setCurrentImageNumberUi(newIndex)
-
-    setTimeout(async function () {
-        await loadNextImage(oldImage)
-    }, sleepDuration / 2)
 }
 
-async function incrementImageIndex(newIndex) {
-    try {
-        const res = await fetch("/api/lastImageIndex", {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ lastImageIndex: newIndex }),
-        });
-
-        if (!res.ok) {
-            throw new Error("Network response was not ok");
-        }
-
-        const body = await res.json();
-        return body.lastImageIndex;
-    } catch (e) {
-        console.warn(e);
-        throw e;
-    }
-}
-
-async function loadNextImage(oldImage) {
-    // console.info("Loading next image")
+function loadNextImage(nextImage) {
     loadingText.classList.toggle("hidden")
-    oldImage.remove()
-    const nextIndex = await incrementImageIndex()
-    const nextImage = await getImage()
-    const nextImageDiv = document.createElement("div")
+    if (oldImage != null) {
+        oldImage.remove()
+    }
+
+    nextImageDiv = document.createElement("div")
     const nextImageIm = document.createElement("img")
 
     nextImageIm.src = nextImage
     nextImageIm.alt = "Fehler beim Anzeigen des Bildes"
     nextImageIm.loading = "eager"
+    nextImageIm.addEventListener("load", () => {
+        loadingText.classList.toggle("hidden")
+    })
 
     nextImageDiv.classList.add("newImage")
     nextImageDiv.classList.add("animation")
@@ -136,14 +146,5 @@ async function loadNextImage(oldImage) {
 
     nextImageDiv.appendChild(nextImageIm)
     document.body.appendChild(nextImageDiv)
-
-    loadingText.classList.toggle("hidden")
-
-    setTimeout(function () {
-        loop(nextImageDiv, nextIndex)
-    }, sleepDuration / 2)
+    this.nextImageDiv = nextImageDiv
 }
-
-setImagesCountUi()
-updateClock()
-loadFirstImage()

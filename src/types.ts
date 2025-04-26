@@ -1,5 +1,6 @@
 export enum MessageType {
-    Image = "image",
+    PrepNext = "prepNext",
     Log = "log",
     IndexUpdate = "indexUpdate",
+    LoadImage = "loadImage"
 }

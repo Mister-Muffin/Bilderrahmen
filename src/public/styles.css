@@ -3,6 +3,7 @@ body {
   overflow: hidden;
   background-color: #141414;
   font-family: "Noto Sans", sans-serif;
+  color: white;
 }
 
 .container {
@@ -44,7 +45,27 @@ body {
   font-weight: 400;
 }
 
-#imageIndex {
+#connectionError {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  color: white;
+  z-index: 1;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.8);
+
+  display: flex;
+  justify-content: center; /* Horizontal zentriert */
+  align-items: center;     /* Vertikal zentriert */
+  flex-direction: column;
+}
+
+#connectionError > span {
+  font-size: large;
+}
+
+#imageNumbers {
   position: fixed;
   bottom: 5px;
   left: 5px;

@@ -19,6 +19,8 @@ export const dir = devMode ? "src/public/images" : "/mnt/bildi"
 const configDir = "config"
 const lastImageIndexPath = configDir + "/lastImageIndex.txt"
 
+const cylceTime = 10 * 1000
+
 console.log(devMode ? "Running in dev mode!" : "Running in production mode.")
 
 console.log("Generating images array")
@@ -26,6 +28,42 @@ const images = generateImageArray(dir)
 images.sort()
 
 let currentImageIndex = 0
+
+function sendSwitchImage() {
+    broadcastData(wss, MessageType.IndexUpdate, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+}
+
+function incrementImageIndex() {
+    currentImageIndex++
+    if (currentImageIndex >= images.length) {
+        currentImageIndex = 0
+    }
+    console.log("Incrementing image index to", currentImageIndex)
+}
+
+// Send the next image to all clients to preload it
+function sendPrepreImage() {
+    // Check if non-admin clients are connected
+    const hasNonAdmin = Array.from(wss.clients).some((client) => !(client as ExtWebSocket).isAdmin)
+    if (!hasNonAdmin) {
+        console.log("No non-admin clients connected. Skipping image preload.")
+        return
+    }
+
+    incrementImageIndex()
+    broadcastData(wss, MessageType.PrepNext, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+    setTimeout(() => {
+        sendSwitchImage()
+    }, 5000)
+}
+
+setInterval(sendPrepreImage, cylceTime)
 
 export interface ExtWebSocket extends WebSocket {
     isAlive: boolean
@@ -53,14 +91,14 @@ wss.on("connection", async (socket: ExtWebSocket, req) => {
         console.log("Client connected")
         socket.send(
             JSON.stringify({
-                type: MessageType.IndexUpdate,
+                type: MessageType.LoadImage,
                 ...{ image: images[currentImageIndex], index: currentImageIndex },
             })
         )
     }
 })
 //https://medium.com/factory-mind/websocket-node-js-express-step-by-step-using-typescript-725114ad5fe4
-setInterval(terminateDeadConnections, 10000, wss)
+setInterval(() => {terminateDeadConnections(wss)}, 10000)
 
 app.use(express.json())
 
