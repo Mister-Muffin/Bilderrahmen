@@ -1,9 +1,9 @@
 // deno-lint-ignore-file no-window
-const siteUpdateInterval = 2 * 1000
-
-async function setImage(index, path) {
+function setImage(index, path) {
     try {
-        const currentDomain = window.location.origin
+        const currentDomain = `${window.location.protocol}//${window.location.hostname}:${
+            parseInt(window.location.port) - 1
+        }`
         path = currentDomain + "/" + path
 
         const imageIndexUi = document.getElementById("imageIndex")
@@ -16,27 +16,52 @@ async function setImage(index, path) {
     }
 }
 
+let connection = null
+const connectionErrorElement = document.getElementById("noConnectionAlert")
 const proto = window.location.protocol == "http:" ? "ws://" : "wss://"
-const connection = new WebSocket(`${proto}${window.location.host}/admin`)
-connection.addEventListener("message", (event) => {
-    console.log("Message from server ", event.data)
-    const data = JSON.parse(event.data)
-    switch (data.type) {
-        case "indexUpdate":
-            setImage(data.index, data.image)
-            break
-        case "log": {
-            const logContainer = document.getElementById("logContainer")
-            const newLogLine = document.createElement("div")
-            newLogLine.innerText = data.message
-            logContainer.appendChild(newLogLine)
-            break
-        }
-        default:
-            console.warn("Unknown message type:", message.type)
-            break
+
+connectToServer()
+
+function connectToServer() {
+    // Discard the old connection if it exists
+    if (connection != null) {
+        connection.close()
     }
-})
+    connection = new WebSocket(`${proto}${window.location.host}`)
+
+    connection.addEventListener("open", () => {
+        console.log("Connected to server")
+        connectionErrorElement.classList.add("hidden")
+    })
+
+    connection.addEventListener("close", () => {
+        console.log("Connection closed")
+        connectionErrorElement.classList.remove("hidden")
+        setTimeout(() => {
+            connectToServer()
+        }, 10000)
+    })
+
+    connection.addEventListener("message", (event) => {
+        console.log("Message from server ", event.data)
+        const data = JSON.parse(event.data)
+        switch (data.type) {
+            case "indexUpdate":
+                setImage(data.index, data.image)
+                break
+            case "log": {
+                const logContainer = document.getElementById("logContainer")
+                const newLogLine = document.createElement("div")
+                newLogLine.innerText = data.message
+                logContainer.appendChild(newLogLine)
+                break
+            }
+            default:
+                console.warn("Unknown message type:", message.type)
+                break
+        }
+    })
+}
 
 const setIndexButton = document.getElementById("setIndexButton")
 setIndexButton.addEventListener("click", async (event) => {

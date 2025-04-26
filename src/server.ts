@@ -8,8 +8,14 @@ import { MessageType } from "./types.ts"
 import { broadcastData, terminateDeadConnections } from "./websocket.ts"
 
 export const app = express()
+export const adminApp = express()
+
 const server = http.createServer(app)
+const adminServer = http.createServer(adminApp)
+
 const wss = new WebSocketServer({ server })
+const wssAdmin = new WebSocketServer({ server: adminServer })
+
 const port = 3000
 
 const devHostnames = ["julian-nixos", "codespaces-a22ac8"]
@@ -70,41 +76,42 @@ export interface ExtWebSocket extends WebSocket {
     isAdmin: boolean
 }
 
-wss.on("connection", async (socket: ExtWebSocket, req) => {
-    socket.isAlive = true
+wss.on("connection", (socket: WebSocket, req) => {
     console.log(req.url)
-    socket.isAdmin = req.url.endsWith("admin")
-    socket.on("pong", () => {
-        socket.isAlive = true
-    })
 
-    if (socket.isAdmin) {
-        console.log("Admin connected")
-        socket.send(
-            JSON.stringify({
-                type: MessageType.IndexUpdate,
-                ...{ image: images[currentImageIndex], index: currentImageIndex },
-            })
-        )
-        socket.send(JSON.stringify({ type: MessageType.Log, message: "Connected" }))
-    } else {
-        console.log("Client connected")
-        socket.send(
-            JSON.stringify({
-                type: MessageType.LoadImage,
-                ...{ image: images[currentImageIndex], index: currentImageIndex },
-            })
-        )
-    }
+    console.log("Client connected")
+    socket.send(
+        JSON.stringify({
+            type: MessageType.LoadImage,
+            ...{ image: images[currentImageIndex], index: currentImageIndex },
+        })
+    )
 })
+wssAdmin.on("connection", (socket: WebSocket, req) => {
+    console.log(req.url)
+
+    console.log("Admin connected")
+    socket.send(
+        JSON.stringify({
+            type: MessageType.IndexUpdate,
+            ...{ image: images[currentImageIndex], index: currentImageIndex },
+        })
+    )
+    socket.send(JSON.stringify({ type: MessageType.Log, message: "Connected" }))
+})
+
 //https://medium.com/factory-mind/websocket-node-js-express-step-by-step-using-typescript-725114ad5fe4
-setInterval(() => {terminateDeadConnections(wss)}, 10000)
+setInterval(() => {
+    terminateDeadConnections(wss)
+}, 10000)
 
 app.use(express.json())
 
 app.use(express.static("src/public"))
 app.use(express.static(dir))
-app.use("/admin", express.static("src/admin"))
+
+adminApp.use(express.json())
+adminApp.use(express.static("src/admin"))
 
 app.get("/api/image", (_req, res) => {
     res.send({ image: images[currentImageIndex], index: currentImageIndex })
@@ -147,6 +154,38 @@ app.get("/api/lastImageIndex", async (_req, res) => {
 // Increase the last image index by 1
 // Update the last image index if new index is provided in the request body
 app.patch("/api/lastImageIndex", async (req, res) => {
+    await updateLastImageIndex(req)
+
+    broadcastData(wss, MessageType.IndexUpdate, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+
+    res.send({ lastImageIndex: currentImageIndex })
+})
+adminApp.patch("/api/lastImageIndex", async (req, res) => {
+    await updateLastImageIndex(req)
+
+    broadcastData(wss, MessageType.IndexUpdate, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+
+    res.send({ lastImageIndex: currentImageIndex })
+})
+
+app.get("/favicon.ico", (_req, res) => {
+    res.status(204)
+})
+
+server.listen(port, "::", () => {
+    console.log(`Express listening on port ${port}`)
+})
+adminServer.listen(port + 1, "::", () => {
+    console.log(`Admin Express listening on port ${port + 1}`)
+})
+
+async function updateLastImageIndex(req: any) {
     try {
         Deno.mkdirSync(configDir, { recursive: true })
     } catch (e) {
@@ -171,19 +210,4 @@ app.patch("/api/lastImageIndex", async (req, res) => {
     await writeAll(file, data)
 
     file.close()
-
-    broadcastData(wss, MessageType.IndexUpdate, {
-        image: images[currentImageIndex],
-        index: currentImageIndex,
-    })
-
-    res.send({ lastImageIndex: currentImageIndex })
-})
-
-app.get("/favicon.ico", (_req, res) => {
-    res.status(204)
-})
-
-server.listen(port, "::", () => {
-    console.log(`Express listening on port ${port}`)
-})
+}

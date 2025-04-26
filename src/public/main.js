@@ -118,7 +118,7 @@ function switchToNextImage(newIndex) {
     activeDiv = nextImageDiv
 
     const splitName = nextImageDiv.firstChild.src.split("/")
-    const splitYear = splitName[0]
+    const splitYear = splitName[3]
     imageYearElement.innerText = splitYear
 
     setCurrentImageNumberUi(newIndex)
