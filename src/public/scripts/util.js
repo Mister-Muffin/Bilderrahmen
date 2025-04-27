@@ -10,3 +10,9 @@ export function createImageElement(imagePath) {
 
     return imageElement
 }
+
+export function extractYearFromPath(path) {
+    const splitName = path.split("/")
+    const splitYear = splitName[1]
+    return splitYear
+}

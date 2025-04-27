@@ -1,6 +1,6 @@
 import { decodeHeicImage } from "./scripts/heic.js"
 import { updateClock } from "./scripts/clock.js"
-import { createImageElement } from "./scripts/util.js"
+import { createImageElement, extractYearFromPath } from "./scripts/util.js"
 
 const containerDiv = document.getElementById("imageContainer")
 
@@ -82,12 +82,6 @@ async function setImage(index, path) {
 
 function setCurrentImageNumberUi(index) {
     imageIndexElement.innerText = index
-}
-
-function extractYearFromPath(path) {
-    const splitName = path.split("/")
-    const splitYear = splitName[1]
-    return splitYear
 }
 
 // Fetches the number of images from the server and sets the UI
