@@ -3,7 +3,7 @@ import { readAll, writeAll } from "jsr:@std/io"
 const configDir = "./config"
 
 const defaultConfig: Config = {
-    cycleTime: 10 * 1000,
+    cycleTime: 20 * 1000,
 }
 const defaultConfigFileName = "config.json"
 
