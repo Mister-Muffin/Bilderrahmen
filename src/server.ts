@@ -1,6 +1,6 @@
 import express from "express"
 import { WebSocket, WebSocketServer } from "ws"
-import http from "node:http"
+import http, { get } from "node:http"
 import { readAll, writeAll } from "jsr:@std/io"
 
 import { generateImageArray } from "./util.ts"
@@ -33,7 +33,8 @@ console.log("Generating images array")
 const images = generateImageArray(dir)
 images.sort()
 
-let currentImageIndex = 0
+let currentImageIndex = await getLastImageIndex()
+
 
 // set, if next image was requested by admin
 let skipNextUpdateLoop = false
@@ -140,7 +141,7 @@ app.get("/api/imagesCount", (_req, res) => {
     res.send({ count: images.length })
 })
 
-app.get("/api/lastImageIndex", async (_req, res) => {
+async function getLastImageIndex() {
     try {
         Deno.mkdirSync(configDir, { recursive: true })
     } catch (e) {
@@ -163,23 +164,13 @@ app.get("/api/lastImageIndex", async (_req, res) => {
 
     console.log(Number(value))
 
-    res.send({ lastImageIndex: Number(value) })
-})
+    return Number(value) 
+}
 
 // Increase the last image index by 1
 // Update the last image index if new index is provided in the request body
-app.patch("/api/lastImageIndex", async (req, res) => {
-    await updateLastImageIndex(req)
-
-    broadcastData(wss, MessageType.IndexUpdate, {
-        image: images[currentImageIndex],
-        index: currentImageIndex,
-    })
-
-    res.send({ lastImageIndex: currentImageIndex })
-})
 adminApp.patch("/api/lastImageIndex", async (req, res) => {
-    await updateLastImageIndex(req)
+    await updateLastImageIndex(req.body.lastImageIndex)
 
     broadcastData(wss, MessageType.IndexUpdate, {
         image: images[currentImageIndex],
@@ -236,7 +227,7 @@ adminServer.listen(port + 1, "::", () => {
     console.log(`Admin Express listening on port ${port + 1}`)
 })
 
-async function updateLastImageIndex(req: any) {
+async function updateLastImageIndex(index: number) {
     try {
         Deno.mkdirSync(configDir, { recursive: true })
     } catch (e) {
@@ -245,13 +236,13 @@ async function updateLastImageIndex(req: any) {
     const file = await Deno.open(lastImageIndexPath, { create: true, read: true, write: true })
     const encoder = new TextEncoder()
 
-    if (req.body.lastImageIndex == undefined) {
+    if (index == undefined) {
         currentImageIndex++
         if (currentImageIndex >= images.length) {
             currentImageIndex = 0
         }
     } else {
-        currentImageIndex = req.body.lastImageIndex
+        currentImageIndex = index
         if (currentImageIndex >= images.length) {
             currentImageIndex = 0
         }
