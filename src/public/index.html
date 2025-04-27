@@ -7,8 +7,9 @@
         <title>Document</title>
         <link rel="stylesheet" href="styles.css" />
         <script src="main.js" type="module" defer></script>
-        <script src="heic.js" type="module" defer></script>
-        <script src="clock.js" type="module"></script>
+        <script src="scripts/heic.js" type="module" defer></script>
+        <script src="scripts/clock.js" type="module"></script>
+        <script src="scripts/util.js" type="module"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -30,8 +31,6 @@
             <span>/</span>
             <span id="imagesCount">N/A</span>
         </div>
-        <div id="c1" class="container animation">
-            <img id="i1" src="" alt="Fehler beim Anzeigen des Bildes" />
-        </div>
+        <div id="imageContainer" class="container"></div>
     </body>
 </html>

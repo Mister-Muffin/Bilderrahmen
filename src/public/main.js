@@ -1,8 +1,8 @@
-import { decodeHeicImage } from "./heic.js"
-import { updateClock } from "./clock.js"
+import { decodeHeicImage } from "./scripts/heic.js"
+import { updateClock } from "./scripts/clock.js"
+import { createImageElement } from "./scripts/util.js"
 
-let activeDiv = document.getElementById("c1")
-let i1 = document.getElementById("i1")
+const containerDiv = document.getElementById("imageContainer")
 
 let loadingText = document.getElementById("loadingText")
 let imageIndexElement = document.getElementById("imageIndex")
@@ -14,6 +14,7 @@ const connectionErrorElement = document.getElementById("connectionError")
 setImagesCountUi()
 
 let nextImageDiv = null
+let activeDiv = null
 let oldImage = null
 
 const proto = window.location.protocol == "http:" ? "ws://" : "wss://"
@@ -63,9 +64,11 @@ function connectToServer() {
     })
 }
 
-function setImage(index, path) {
+async function setImage(index, path) {
     try {
-        i1.src = path
+        await loadNextImage(path)
+        console.log("Loaded image:", path)
+        switchToNextImage(index)
         setCurrentImageNumberUi(index)
     } catch (e) {
         console.warn(e)
@@ -74,6 +77,12 @@ function setImage(index, path) {
 
 function setCurrentImageNumberUi(index) {
     imageIndexElement.innerText = index
+}
+
+function setCurrentImageYearUi() {
+    const splitName = nextImageDiv.firstChild.src.split("/") // TODO: This is not defined for canvas
+    const splitYear = splitName[3]
+    imageYearElement.innerText = splitYear
 }
 
 // Fetches the number of images from the server and sets the UI
@@ -96,16 +105,16 @@ function switchToNextImage(newIndex) {
     }
     oldImage = activeDiv
 
-    activeDiv.classList.remove("slidein")
-    activeDiv.classList.add("slideout")
+    // If this is the first image, we don't have an activeDiv
+    if (activeDiv != null) {
+        activeDiv.classList.remove("slidein")
+        activeDiv.classList.add("slideout")
+    }
 
     nextImageDiv.classList.add("slidein")
     activeDiv = nextImageDiv
 
-    const splitName = nextImageDiv.firstChild.src.split("/")
-    const splitYear = splitName[3]
-    imageYearElement.innerText = splitYear
-
+    setCurrentImageYearUi()
     setCurrentImageNumberUi(newIndex)
 }
 
@@ -124,21 +133,14 @@ async function loadNextImage(nextImage) {
         nextImageDiv.appendChild(canvas)
         loadingText.classList.add("hidden")
     } else {
-        const nextImageIm = document.createElement("img")
+        const newImageElement = createImageElement(nextImage)
 
-        nextImageIm.src = nextImage
-        nextImageIm.alt = "Fehler beim Anzeigen des Bildes"
-        nextImageIm.loading = "eager"
-        nextImageIm.addEventListener("load", () => {
-            loadingText.classList.add("hidden")
-        })
-
-        nextImageDiv.appendChild(nextImageIm)
+        nextImageDiv.appendChild(newImageElement)
     }
 
     nextImageDiv.classList.add("newImage")
     nextImageDiv.classList.add("animation")
     nextImageDiv.classList.add("container")
 
-    document.body.appendChild(nextImageDiv)
+    containerDiv.appendChild(nextImageDiv)
 }
