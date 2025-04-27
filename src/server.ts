@@ -6,7 +6,7 @@ import { readAll, writeAll } from "jsr:@std/io"
 import { generateImageArray } from "./util.ts"
 import { MessageType } from "./types.ts"
 import { broadcastData, terminateDeadConnections } from "./websocket.ts"
-import { getConfig, saveConfig } from "./config.ts";
+import { getConfig, saveConfig } from "./config.ts"
 
 export const app = express()
 export const adminApp = express()
@@ -35,7 +35,6 @@ const images = generateImageArray(dir)
 images.sort()
 
 let currentImageIndex = await getLastImageIndex()
-
 
 // set, if next image was requested by admin
 let skipNextUpdateLoop = false
@@ -175,7 +174,7 @@ async function getLastImageIndex() {
 
     console.log(Number(value))
 
-    return Number(value) 
+    return Number(value)
 }
 
 // Increase the last image index by 1
@@ -183,7 +182,12 @@ async function getLastImageIndex() {
 adminApp.patch("/api/lastImageIndex", async (req, res) => {
     await updateLastImageIndex(req.body.lastImageIndex)
 
-    broadcastData(wss, MessageType.IndexUpdate, {
+    broadcastData(wss, MessageType.LoadImage, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+    // Send the updated image and index to the admin clients
+    broadcastData(wssAdmin, MessageType.IndexUpdate, {
         image: images[currentImageIndex],
         index: currentImageIndex,
     })
