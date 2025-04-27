@@ -4,9 +4,9 @@ import { createImageElement } from "./scripts/util.js"
 
 const containerDiv = document.getElementById("imageContainer")
 
-let loadingText = document.getElementById("loadingText")
-let imageIndexElement = document.getElementById("imageIndex")
-let imageYearElement = document.getElementById("folder")
+const loadingText = document.getElementById("loadingText")
+const imageIndexElement = document.getElementById("imageIndex")
+const imageYearElement = document.getElementById("folder")
 const clockElement = document.getElementById("clock")
 
 const connectionErrorElement = document.getElementById("connectionError")
