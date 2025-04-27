@@ -1,4 +1,5 @@
 import { decodeHeicImage } from "./heic.js"
+import { updateClock } from "./clock.js"
 
 let activeDiv = document.getElementById("c1")
 let i1 = document.getElementById("i1")
@@ -6,11 +7,11 @@ let i1 = document.getElementById("i1")
 let loadingText = document.getElementById("loadingText")
 let imageIndexElement = document.getElementById("imageIndex")
 let imageYearElement = document.getElementById("folder")
+const clockElement = document.getElementById("clock")
 
 const connectionErrorElement = document.getElementById("connectionError")
 
 setImagesCountUi()
-updateClock()
 
 let nextImageDiv = null
 let oldImage = null
@@ -28,6 +29,8 @@ setInterval(() => {
         connectToServer()
     }
 }, 10000)
+
+setInterval(updateClock, 1000, clockElement)
 
 function connectToServer() {
     // Discard the old connection if it exists
@@ -58,26 +61,6 @@ function connectToServer() {
         console.log("Connected to server")
         connectionErrorElement.classList.add("hidden")
     })
-}
-
-function updateClock() {
-    let date = new Date()
-    let hh = date.getHours().toString()
-    let mm = date.getMinutes().toString()
-
-    // if (hh.length < 2) {
-    //     hh = "0" + hh;
-    // }
-    if (mm.length < 2) {
-        mm = "0" + mm
-    }
-
-    let time = hh + ":" + mm
-
-    document.getElementById("clock").innerText = time
-    setTimeout(function () {
-        updateClock()
-    }, 1000)
 }
 
 function setImage(index, path) {
