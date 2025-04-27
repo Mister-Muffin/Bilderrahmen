@@ -35,8 +35,19 @@ images.sort()
 
 let currentImageIndex = 0
 
+// set, if next image was requested by admin
+let skipNextUpdateLoop = false
+
 function sendSwitchImage() {
+    if (skipNextUpdateLoop) {
+        skipNextUpdateLoop = false
+        return
+    }
     broadcastData(wss, MessageType.IndexUpdate, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+    broadcastData(wssAdmin, MessageType.IndexUpdate, {
         image: images[currentImageIndex],
         index: currentImageIndex,
     })
@@ -52,6 +63,10 @@ function incrementImageIndex() {
 
 // Send the next image to all clients to preload it
 function sendPrepreImage() {
+    if (skipNextUpdateLoop) {
+        skipNextUpdateLoop = false
+        return
+    }
     // Check if non-admin clients are connected
     const hasNonAdmin = Array.from(wss.clients).some((client) => !(client as ExtWebSocket).isAdmin)
     if (!hasNonAdmin) {
@@ -172,6 +187,42 @@ adminApp.patch("/api/lastImageIndex", async (req, res) => {
     })
 
     res.send({ lastImageIndex: currentImageIndex })
+})
+
+adminApp.post("/api/nextImage", (_req, res) => {
+    incrementImageIndex()
+
+    broadcastData(wss, MessageType.LoadImage, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+    // Send the updated image and index to the admin clients
+    broadcastData(wssAdmin, MessageType.IndexUpdate, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+
+    skipNextUpdateLoop = true
+    res.sendStatus(200)
+})
+adminApp.post("/api/prevImage", (_req, res) => {
+    currentImageIndex--
+    if (currentImageIndex < 0) {
+        currentImageIndex = images.length - 1
+    }
+
+    broadcastData(wss, MessageType.LoadImage, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+    // Send the updated image and index to the admin clients
+    broadcastData(wssAdmin, MessageType.IndexUpdate, {
+        image: images[currentImageIndex],
+        index: currentImageIndex,
+    })
+
+    skipNextUpdateLoop = true
+    res.sendStatus(200)
 })
 
 app.get("/favicon.ico", (_req, res) => {

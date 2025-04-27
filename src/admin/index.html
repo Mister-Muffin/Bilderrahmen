@@ -18,11 +18,11 @@
             <div class="container-fluid">
                 <span class="navbar-brand mb-0 h1">Bildi</span>
             </div>
-        </nav>       
+        </nav>
         <div class="container text-center p-3">
-        <div id="noConnectionAlert" class="alert alert-danger" role="alert">
-            Keine Verbindung zum Server!
-          </div>   
+            <div id="noConnectionAlert" class="alert alert-danger" role="alert">
+                Keine Verbindung zum Server!
+            </div>
             <div class="row justify-content-md-center gap-3 p-3">
                 <div class="col col-sm-2 card p-1">
                     <span>Aktuelles Bild:</span>
@@ -52,6 +52,19 @@
                             Setzen
                         </button>
                     </form>
+                </div>
+            </div>
+            <div class="row justify-content-md-center gap-3 p-3">
+                <div class="col col-sm-4 gap-2 card p-1">
+                    <span>Steuerung:</span>
+                    <div class="d-flex flex-row justify-content-center gap-3">
+                        <button type="submit" id="prevImageBtn" class="btn btn-danger">
+                            Vorheriges Bild
+                        </button>
+                        <button type="submit" id="skipImageBtn" class="btn btn-success">
+                            Nächstes Bild
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="row justify-content-md-center gap-3 p-3">

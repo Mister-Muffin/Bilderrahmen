@@ -81,3 +81,26 @@ setIndexButton.addEventListener("click", async (event) => {
         console.warn(e)
     }
 })
+
+const nextImageButton = document.getElementById("skipImageBtn")
+nextImageButton.addEventListener("click", async (event) => {
+    event.preventDefault()
+    try {
+        await fetch("/api/nextImage", {
+            method: "POST",
+        })
+    } catch (e) {
+        console.warn(e)
+    }
+})
+const previousImageButton = document.getElementById("prevImageBtn")
+previousImageButton.addEventListener("click", async (event) => {
+    event.preventDefault()
+    try {
+        await fetch("/api/prevImage", {
+            method: "POST",
+        })
+    } catch (e) {
+        console.warn(e)
+    }
+})
