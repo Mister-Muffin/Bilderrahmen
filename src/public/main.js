@@ -1,3 +1,5 @@
+import { decodeHeicImage } from "./heic.js"
+
 let activeDiv = document.getElementById("c1")
 let i1 = document.getElementById("i1")
 
@@ -124,27 +126,36 @@ function switchToNextImage(newIndex) {
     setCurrentImageNumberUi(newIndex)
 }
 
-function loadNextImage(nextImage) {
-    loadingText.classList.toggle("hidden")
+async function loadNextImage(nextImage) {
+    loadingText.classList.remove("hidden")
     if (oldImage != null) {
         oldImage.remove()
     }
 
     nextImageDiv = document.createElement("div")
-    const nextImageIm = document.createElement("img")
 
-    nextImageIm.src = nextImage
-    nextImageIm.alt = "Fehler beim Anzeigen des Bildes"
-    nextImageIm.loading = "eager"
-    nextImageIm.addEventListener("load", () => {
-        loadingText.classList.toggle("hidden")
-    })
+    if (nextImage.endsWith(".heic")) {
+        // Decode the heic image
+        const canvas = await decodeHeicImage(nextImage)
+
+        nextImageDiv.appendChild(canvas)
+        loadingText.classList.add("hidden")
+    } else {
+        const nextImageIm = document.createElement("img")
+
+        nextImageIm.src = nextImage
+        nextImageIm.alt = "Fehler beim Anzeigen des Bildes"
+        nextImageIm.loading = "eager"
+        nextImageIm.addEventListener("load", () => {
+            loadingText.classList.add("hidden")
+        })
+
+        nextImageDiv.appendChild(nextImageIm)
+    }
 
     nextImageDiv.classList.add("newImage")
     nextImageDiv.classList.add("animation")
     nextImageDiv.classList.add("container")
 
-    nextImageDiv.appendChild(nextImageIm)
     document.body.appendChild(nextImageDiv)
-    this.nextImageDiv = nextImageDiv
 }
