@@ -17,6 +17,8 @@ let nextImageDiv = null
 let activeDiv = null
 let oldImage = null
 
+let nextImageYear = ""
+
 const proto = window.location.protocol == "http:" ? "ws://" : "wss://"
 let connection = null
 
@@ -46,9 +48,11 @@ function connectToServer() {
         switch (data.type) {
             case "indexUpdate":
                 switchToNextImage(data.index)
+                imageYearElement.innerText = nextImageYear
                 break
             case "prepNext":
                 loadNextImage(data.image)
+                nextImageYear = extractYearFromPath(data.image)
                 break
             case "loadImage":
                 setImage(data.index, data.image)
@@ -67,8 +71,9 @@ function connectToServer() {
 async function setImage(index, path) {
     try {
         await loadNextImage(path)
-        console.log("Loaded image:", path)
         switchToNextImage(index)
+
+        imageYearElement.innerText = extractYearFromPath(path)
         setCurrentImageNumberUi(index)
     } catch (e) {
         console.warn(e)
@@ -79,10 +84,10 @@ function setCurrentImageNumberUi(index) {
     imageIndexElement.innerText = index
 }
 
-function setCurrentImageYearUi() {
-    const splitName = nextImageDiv.firstChild.src.split("/") // TODO: This is not defined for canvas
-    const splitYear = splitName[3]
-    imageYearElement.innerText = splitYear
+function extractYearFromPath(path) {
+    const splitName = path.split("/")
+    const splitYear = splitName[1]
+    return splitYear
 }
 
 // Fetches the number of images from the server and sets the UI
@@ -114,7 +119,6 @@ function switchToNextImage(newIndex) {
     nextImageDiv.classList.add("slidein")
     activeDiv = nextImageDiv
 
-    setCurrentImageYearUi()
     setCurrentImageNumberUi(newIndex)
 }
 
