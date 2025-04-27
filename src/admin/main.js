@@ -104,3 +104,35 @@ previousImageButton.addEventListener("click", async (event) => {
         console.warn(e)
     }
 })
+
+const intervalInput = document.getElementById("inputInterval")
+;(async () => {
+    intervalInput.value = await getInterval()
+})()
+
+const saveConfigButton = document.getElementById("saveConfigBtn")
+saveConfigButton.addEventListener("click", async (event) => {
+    event.preventDefault()
+    const interval = parseInt(intervalInput.value)
+    try {
+        await fetch("/api/interval", {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ interval }),
+        })
+    } catch (e) {
+        console.warn(e)
+    }
+})
+
+async function getInterval() {
+    try {
+        const response = await fetch("/api/interval")
+        const data = await response.json()
+        return data.interval
+    } catch (error) {
+        console.error("Error fetching interval:", error)
+    }
+}

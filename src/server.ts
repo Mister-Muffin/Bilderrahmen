@@ -1,11 +1,12 @@
 import express from "express"
 import { WebSocket, WebSocketServer } from "ws"
-import http, { get } from "node:http"
+import http from "node:http"
 import { readAll, writeAll } from "jsr:@std/io"
 
 import { generateImageArray } from "./util.ts"
 import { MessageType } from "./types.ts"
 import { broadcastData, terminateDeadConnections } from "./websocket.ts"
+import { getConfig, saveConfig } from "./config.ts";
 
 export const app = express()
 export const adminApp = express()
@@ -25,7 +26,7 @@ export const dir = devMode ? "src/public/images" : "/mnt/bildi"
 const configDir = "config"
 const lastImageIndexPath = configDir + "/lastImageIndex.txt"
 
-const cylceTime = 10 * 1000
+let config = await getConfig()
 
 console.log(devMode ? "Running in dev mode!" : "Running in production mode.")
 
@@ -85,7 +86,17 @@ function sendPrepreImage() {
     }, 5000)
 }
 
-setInterval(sendPrepreImage, cylceTime)
+let loopInterval = setInterval(sendPrepreImage, config.cycleTime)
+function stopLoop() {
+    clearInterval(loopInterval)
+}
+function startLoop() {
+    loopInterval = setInterval(sendPrepreImage, config.cycleTime)
+}
+function restartLoop() {
+    stopLoop()
+    startLoop()
+}
 
 export interface ExtWebSocket extends WebSocket {
     isAlive: boolean
@@ -214,6 +225,19 @@ adminApp.post("/api/prevImage", (_req, res) => {
 
     skipNextUpdateLoop = true
     res.sendStatus(200)
+})
+adminApp.get("/api/interval", (_req, res) => {
+    res.send({ interval: config.cycleTime / 1000 })
+})
+adminApp.patch("/api/interval", async (req, res) => {
+    const newInterval = req.body.interval * 1000
+    if (newInterval && typeof newInterval === "number") {
+        config = await saveConfig({ ...config, cycleTime: newInterval })
+        restartLoop()
+        res.send({ interval: config.cycleTime })
+    } else {
+        res.status(400).send({ error: "Invalid interval" })
+    }
 })
 
 app.get("/favicon.ico", (_req, res) => {
