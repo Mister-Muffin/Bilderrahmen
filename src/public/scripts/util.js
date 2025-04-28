@@ -30,6 +30,10 @@ export function showFullscreenMessage(title, message) {
 export function hideFullscreenMessage(messageContainer) {
     if (messageContainer) {
         messageContainer.remove()
+    } else {
+        document.querySelectorAll(".fillMessage").forEach((message) => {
+            message.remove()
+        })
     }
 }
 
@@ -40,5 +44,5 @@ function handleImageLoad(_event) {
 function handleImageError(_event) {
     loadingText.classList.add("hidden")
     showFullscreenMessage("Fehler beim laden des Bildes", "Das Bild konnte nicht geladen werden.")
-    console.warn("Error loading image:", imagePath)
+    console.warn("Error loading image")
 }

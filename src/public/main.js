@@ -137,6 +137,8 @@ async function loadNextImage(nextImage) {
         oldImage.remove()
     }
 
+    hideFullscreenMessage()
+
     nextImageDiv = document.createElement("div")
 
     if (nextImage.endsWith(".heic")) {
