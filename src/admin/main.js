@@ -1,9 +1,8 @@
 // deno-lint-ignore-file no-window
 function setImage(index, path) {
     try {
-        const currentDomain = `${window.location.protocol}//${window.location.hostname}:${
-            parseInt(window.location.port) - 1
-        }`
+        const port = parseInt(window.location.port) - 1 || 3000
+        const currentDomain = `${window.location.protocol}//${window.location.hostname}:${port}`
         path = currentDomain + "/" + path
 
         const imageIndexUi = document.getElementById("imageIndex")

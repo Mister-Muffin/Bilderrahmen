@@ -3,7 +3,7 @@ import { readAll, writeAll } from "jsr:@std/io"
 const configDir = "./config"
 
 const defaultConfig: Config = {
-    cycleTime: 20 * 1000,
+    cycleTime: 20 * 1000
 }
 const defaultConfigFileName = "config.json"
 
@@ -37,6 +37,19 @@ export async function getConfig(configFile: string = defaultConfigFileName): Pro
     file.close()
     console.log(content)
     return JSON.parse(content) as Config
+}
+
+export async function getConfigValue(
+    key: string,
+    configFile: string = defaultConfigFileName
+): Promise<string> {
+    let config = await getConfig(configFile)
+    if (!config[key]) {
+        console.warn(`Config key ${key} not found`)
+        config = { ...config, [key]: defaultConfig[key] }
+        await saveConfig(config, configFile)
+    }
+    return config[key]
 }
 
 export async function saveConfig(

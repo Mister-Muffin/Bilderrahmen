@@ -18,6 +18,7 @@ const wss = new WebSocketServer({ server })
 const wssAdmin = new WebSocketServer({ server: adminServer })
 
 const port = 3000
+const adminPort = 3001
 
 const devHostnames = ["julian-nixos", "codespaces-a22ac8"]
 const devMode = devHostnames.includes(Deno.hostname())
@@ -251,8 +252,8 @@ app.get("/favicon.ico", (_req, res) => {
 server.listen(port, "::", () => {
     console.log(`Express listening on port ${port}`)
 })
-adminServer.listen(port + 1, "::", () => {
-    console.log(`Admin Express listening on port ${port + 1}`)
+adminServer.listen(adminPort, "::", () => {
+    console.log(`Admin Express listening on port ${adminPort}`)
 })
 
 async function updateLastImageIndex(index: number) {
