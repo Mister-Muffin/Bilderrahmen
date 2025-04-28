@@ -1,6 +1,11 @@
 import { decodeHeicImage } from "./scripts/heic.js"
 import { updateClock } from "./scripts/clock.js"
-import { createImageElement, extractYearFromPath } from "./scripts/util.js"
+import {
+    createImageElement,
+    extractYearFromPath,
+    hideFullscreenMessage,
+    showFullscreenMessage,
+} from "./scripts/util.js"
 
 const containerDiv = document.getElementById("imageContainer")
 
@@ -9,7 +14,7 @@ const imageIndexElement = document.getElementById("imageIndex")
 const imageYearElement = document.getElementById("folder")
 const clockElement = document.getElementById("clock")
 
-const connectionErrorElement = document.getElementById("connectionError")
+let fullscreenMessage = null
 
 setImagesCountUi()
 
@@ -27,7 +32,12 @@ connectToServer()
 // Check the connection on an interval
 setInterval(() => {
     if (connection.readyState != WebSocket.OPEN) {
-        connectionErrorElement.classList.remove("hidden")
+        if (fullscreenMessage == null) {
+            fullscreenMessage = showFullscreenMessage(
+                "&#9888; Verbindung zum Server fehlgeschlagen",
+                "Wartet auf automatischen Verbindungsaufbau..."
+            )
+        }
         console.log("Connection closed, trying to reconnect...")
         connectToServer()
     }
@@ -62,10 +72,15 @@ function connectToServer() {
                 break
         }
     })
-    connection.addEventListener("open", () => {
-        console.log("Connected to server")
-        connectionErrorElement.classList.add("hidden")
-    })
+    connection.addEventListener(
+        "open",
+        () => {
+            console.log("Connected to server")
+            hideFullscreenMessage(fullscreenMessage)
+            fullscreenMessage = null
+        },
+        { once: true }
+    )
 }
 
 async function setImage(index, path) {
