@@ -40,7 +40,7 @@ let currentImageIndex = await getLastImageIndex()
 // set, if next image was requested by admin
 let skipNextUpdateLoop = false
 
-function sendSwitchImage() {
+async function sendSwitchImage() {
     if (skipNextUpdateLoop) {
         skipNextUpdateLoop = false
         return
@@ -53,6 +53,7 @@ function sendSwitchImage() {
         image: images[currentImageIndex],
         index: currentImageIndex,
     })
+    await updateLastImageIndex(currentImageIndex)
 }
 
 function incrementImageIndex() {
