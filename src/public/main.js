@@ -141,7 +141,7 @@ async function loadNextImage(nextImage) {
 
     nextImageDiv = document.createElement("div")
 
-    if (nextImage.endsWith(".heic")) {
+    if (nextImage.toLowerCase().endsWith(".heic")) {
         // Decode the heic image
         const canvas = await decodeHeicImage(nextImage)
 
