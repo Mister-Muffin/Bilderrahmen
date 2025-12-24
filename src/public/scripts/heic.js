@@ -1,28 +1,22 @@
-import libheif from "https://cdn.jsdelivr.net/npm/libheif-js@1.17.1/libheif-wasm/libheif-bundle.mjs"
+import heic2any from "https://esm.sh/heic2any"
 
 // converts a heic image and puts it in the returned canvas
 export async function decodeHeicImage(path) {
-    const heif = libheif()
-    const file = await fetch(path)
-        .then((response) => response.blob())
-        .then((blob) => {
-            return new Promise((resolve) => {
-                const reader = new FileReader()
-                reader.onload = () => {
-                    resolve(reader.result)
-                }
-                reader.readAsArrayBuffer(blob)
-            })
-        })
+    const blob = await fetch(path).then(r => r.blob())
 
-    const decoder = new heif.HeifDecoder()
-    const data = decoder.decode(file)
+    const converted = await heic2any({
+        blob,
+        toType: "image/jpeg",
+        quality: 0.9
+    })
 
-    const image = data[0]
-    const originalWidth = image.get_width()
-    const originalHeight = image.get_height()
+    const img = new Image()
+    img.src = URL.createObjectURL(converted)
+    await img.decode()
 
-    // Berechne die neue Größe basierend auf der Bildschirmgröße
+    const originalWidth = img.width
+    const originalHeight = img.height
+
     const screenWidth = window.innerWidth
     const screenHeight = window.innerHeight
 
@@ -40,27 +34,9 @@ export async function decodeHeicImage(path) {
     canvas.width = canvasWidth
     canvas.height = canvasHeight
 
-    const context = canvas.getContext("2d")
-    const imageData = context.createImageData(originalWidth, originalHeight)
+    const ctx = canvas.getContext("2d")
+    ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight)
 
-    await new Promise((resolve, reject) => {
-        image.display(imageData, (displayData) => {
-            if (!displayData) {
-                return reject(new Error("HEIF processing error"))
-            }
-
-            resolve()
-        })
-    })
-
-    // Skaliere das Bild auf die neue Größe
-    const tempCanvas = document.createElement("canvas")
-    tempCanvas.width = originalWidth
-    tempCanvas.height = originalHeight
-    const tempContext = tempCanvas.getContext("2d")
-    tempContext.putImageData(imageData, 0, 0)
-
-    context.drawImage(tempCanvas, 0, 0, canvasWidth, canvasHeight)
-
+    URL.revokeObjectURL(img.src)
     return canvas
 }
